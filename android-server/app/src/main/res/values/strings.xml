@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GPS Mock Server</string>
+    <string name="server_running">運行中</string>
+    <string name="server_stopped">已停止</string>
+    <string name="start_server">啟動伺服器</string>
+    <string name="stop_server">停止伺服器</string>
+</resources>

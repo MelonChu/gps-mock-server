@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 定位圖標 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,30
+            C43.5,30 35,38.5 35,49
+            C35,60.5 54,80 54,80
+            C54,80 73,60.5 73,49
+            C73,38.5 64.5,30 54,30Z
+            M54,56C50.1,56 47,52.9 47,49
+            C47,45.1 50.1,42 54,42
+            C57.9,42 61,45.1 61,49
+            C61,52.9 57.9,56 54,56Z" />
+</vector>

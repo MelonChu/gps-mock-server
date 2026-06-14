@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 標題 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GPS Mock Server"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="桌面客戶端連線中樞"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- 分隔線 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#DDDDDD"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- IP 位址 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="本機 IP 位址"
+            android:textSize="12sp"
+            android:textColor="#888888"/>
+
+        <TextView
+            android:id="@+id/ip_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="偵測中..."
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- 監聽埠號 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="監聽埠號"
+            android:textSize="12sp"
+            android:textColor="#888888"/>
+
+        <TextView
+            android:id="@+id/port"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="8888"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 狀態 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="伺服器狀態"
+            android:textSize="12sp"
+            android:textColor="#888888"/>
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="已停止"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#CC0000"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 客戶端資訊 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="連線狀態"
+            android:textSize="12sp"
+            android:textColor="#888888"/>
+
+        <TextView
+            android:id="@+id/client_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="等待連線..."
+            android:textSize="14sp"
+            android:fontFamily="monospace"
+            android:textColor="#666666"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- 啟動/停止按鈕 -->
+        <Button
+            android:id="@+id/start_stop_button"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="啟動伺服器"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 分隔線 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#DDDDDD"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 使用說明 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="使用方式"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1. 確認手機與電腦在同一 Wi-Fi 網路\n2. 點擊「啟動伺服器」\n3. 在電腦端執行 gps_mock_client.py\n4. 輸入上方顯示的 IP 位址與埠號"
+            android:textSize="13sp"
+            android:lineSpacingExtra="4dp"
+            android:textColor="#555555"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="格式: python gps_mock_client.py --ip [IP]"
+            android:textSize="13sp"
+            android:fontFamily="monospace"
+            android:background="#F5F5F5"
+            android:padding="8dp"
+            android:textColor="#333333"/>
+
+    </LinearLayout>
+
+</ScrollView>
