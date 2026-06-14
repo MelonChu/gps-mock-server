@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.gpsmock.server.utils.GpsSimulator
 import com.gpsmock.server.utils.WalkState
+import com.gpsmock.server.utils.GoogleFitHelper
 import kotlinx.coroutines.*
 
 class GpsMockService : Service() {
@@ -69,8 +70,9 @@ class GpsMockService : Service() {
                 // 每 60 步（約 1 分鐘）寫入步數到 Google Fit
                 if (s % 60 == 0) {
                     totalSteps += 100
-                    googleFit?.let { g ->
-                        if (g.hasPermission()) g.writeSteps(totalSteps)
+                    val gf = googleFit
+                    if (gf != null && gf.hasPermission()) {
+                        gf.writeSteps(totalSteps)
                     }
                 }
                 delay(1000)

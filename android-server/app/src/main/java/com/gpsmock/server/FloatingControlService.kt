@@ -35,9 +35,11 @@ class FloatingControlService : Service() {
         if (overlay != null) return
         val inf = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
         overlay = inf.inflate(R.layout.overlay_controls, null).apply {
-            findViewById<JoystickView>(R.id.joystick).setListener { a, d ->
-                sendBear(if (d < 0.15f) -1.0 else a)
-            }
+            findViewById<JoystickView>(R.id.joystick).setListener(object : JoystickView.Listener {
+                override fun onMove(angle: Double, dist: Float) {
+                    sendBear(if (dist < 0.15f) -1.0 else angle)
+                }
+            })
             findViewById<ToggleButton>(R.id.toggle_roam).setOnCheckedChangeListener { _, c ->
                 isRoam = c; findViewById<TextView>(R.id.roam_label).text = "游蕩 ${if(c) "🌙" else "✋"}"
                 sendRoam(c)

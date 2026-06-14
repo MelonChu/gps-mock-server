@@ -18,52 +18,56 @@ import java.time.ZonedDateTime
 import java.time.ZoneId
 
 /**
- * Google Fit 步數寫入 — 直接在我們 App 內完成
- * Pikmin Bloom 會自動從 Google Fit 讀取步數
+ * Google Fit 步數寫入器
+ * 完全在我們 App 內完成，不需 Health Connect 或第三方 App
  */
 class GoogleFitHelper(private val ctx: Context) {
     companion object {
         private const val TAG = "GFitHelper"
-        private const val MAX_DAILY = 15000
+        private const val MAX_DAILY = 15000L
     }
 
-    fun getFitnessOptions() = FitnessOptions.builder()
-        .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-        .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-        .build()
+    private val fitOptions by lazy {
+        FitnessOptions.builder()
+            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
+            .build()
+    }
 
     fun hasPermission(): Boolean {
-        val a = GoogleSignIn.getAccountForExtension(ctx, getFitnessOptions()) ?: return false
-        return GoogleSignIn.hasPermissions(a, getFitnessOptions())
+        try {
+            val a = GoogleSignIn.getAccountForExtension(ctx, fitOptions)
+            return GoogleSignIn.hasPermissions(a, fitOptions)
+        } catch (_: Exception) { return false }
     }
-
-    fun getAccount(): GoogleSignInAccount? = try {
-        GoogleSignIn.getAccountForExtension(ctx, getFitnessOptions())
-    } catch (_: Exception) { null }
 
     /** 寫入步數到 Google Fit */
     fun writeSteps(steps: Long): Boolean {
-        val account = getAccount() ?: run { Log.w(TAG, "未登入"); return false }
-        val count = minOf(steps, MAX_DAILY.toLong())
+        if (steps <= 0) return false
+        val account = GoogleSignIn.getAccountForExtension(ctx, fitOptions)
+        if (!GoogleSignIn.hasPermissions(account, fitOptions)) return false
+
+        val count = minOf(steps, MAX_DAILY).toInt()
         if (count <= 0) return false
 
         try {
             val now = ZonedDateTime.now()
-            val start = now.toLocalDate().atStartOfDay(ZoneId.systemDefault()).toInstant()
-            val end = start.plusSeconds(86399)
+            val startMs = now.toLocalDate().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
-            val source = DataSource.builder()
+            val source = DataSource.Builder()
                 .setAppPackageName(ctx)
                 .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
                 .setType(DataSource.TYPE_RAW)
                 .build()
 
             val point = DataPoint.builder(source)
-                .setTimestamp(start.toEpochMilli(), TimeUnit.MILLISECONDS)
-                .setField(Field.FIELD_STEPS, count.toInt())
+                .setTimestamp(startMs, TimeUnit.MILLISECONDS)
+                .setField(Field.FIELD_STEPS, count)
                 .build()
 
-            val dataSet = DataSet.builder(source).addDataPoint(point).build()
+            // DataSet.builder() 在 play-services-fitness 21.1.0 中需要 DataSource
+            // 使用 DataSet.create() 替代
+            val dataSet = DataSet.create(source)
+            dataSet.add(point)
 
             Tasks.await(
                 Fitness.getHistoryClient(ctx, account).insertData(dataSet),
@@ -72,7 +76,7 @@ class GoogleFitHelper(private val ctx: Context) {
             Log.i(TAG, "✅ +$count 步 → Google Fit")
             return true
         } catch (e: ApiException) {
-            Log.e(TAG, "Google Fit 錯誤: ${e.statusCode} ${e.message}")
+            Log.e(TAG, "Google Fit API 錯誤: [${e.statusCode}] ${e.message}")
         } catch (e: Exception) {
             Log.e(TAG, "寫入失敗: ${e.message}")
         }

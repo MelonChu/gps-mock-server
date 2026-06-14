@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.wifi.WifiManager
+import android.net.Uri
 import android.util.Log
 import android.os.Build
 import android.os.Bundle
