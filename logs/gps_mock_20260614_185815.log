@@ -1,0 +1,41 @@
+[2026-06-14 18:58:15,140] WARNING  GPSMock - pymobiledevice3 未安裝。iOS 偵測功能將被停用。
+[2026-06-14 18:58:15,140] INFO     GPSMock - ============================================================
+[2026-06-14 18:58:15,140] INFO     GPSMock -   Pikmin Bloom GPS 模擬器 v1.0.0
+[2026-06-14 18:58:15,140] INFO     GPSMock -   目標手機: 192.168.68.62:8888
+[2026-06-14 18:58:15,140] INFO     GPSMock -   起始位置: (25.047800, 121.517000)
+[2026-06-14 18:58:15,140] INFO     GPSMock - ============================================================
+[2026-06-14 18:58:15,148] INFO     GPSMock - ============================================================
+[2026-06-14 18:58:15,148] INFO     GPSMock -   運行前檢查 (Preflight Checklist)
+[2026-06-14 18:58:15,148] INFO     GPSMock - ============================================================
+[2026-06-14 18:58:15,148] INFO     GPSMock - 
+[1/5] 檢查 ADB 裝置連線...
+[2026-06-14 18:58:15,165] INFO     GPSMock - 找到 2 個已授權裝置: R5CW607K8DX, 192.168.68.62:5555
+[2026-06-14 18:58:15,166] INFO     GPSMock -   ✓ 找到 2 個已授權裝置: R5CW607K8DX, 192.168.68.62:5555
+[2026-06-14 18:58:15,166] INFO     GPSMock - [1a] 測試裝置回應...
+[2026-06-14 18:58:15,184] WARNING  GPSMock - ADB 裝置回應異常: adb.exe: more than one device/emulator
+[2026-06-14 18:58:15,184] ERROR    GPSMock -   ✗ 裝置回應異常
+[2026-06-14 18:58:15,249] INFO     GPSMock - 裝置資訊: adb.exe: more than one device/emulator Android adb.exe: more than one device/emulator
+[2026-06-14 18:58:15,249] INFO     GPSMock -   裝置: adb.exe: more than one device/emulator adb.exe: more than one device/emulator (Android adb.exe: more than one device/emulator)
+[2026-06-14 18:58:15,249] INFO     GPSMock - [1b] 嘗試自動偵測裝置 IP...
+[2026-06-14 18:58:15,264] WARNING  GPSMock - 獲取 IP 失敗: adb.exe: more than one device/emulator
+[2026-06-14 18:58:15,264] WARNING  GPSMock -   ⚠ 無法自動偵測 IP，將使用設定中的 192.168.68.62
+[2026-06-14 18:58:15,264] INFO     GPSMock - 
+[2/5] iOS 檢查已跳過
+[2026-06-14 18:58:15,264] INFO     GPSMock - 
+[3/5] 檢查網路連線至 192.168.68.62...
+[2026-06-14 18:58:15,319] INFO     GPSMock -   ✓ 192.168.68.62 可 ping 通
+[2026-06-14 18:58:15,319] INFO     GPSMock - 
+[4/5] 檢查 TCP 埠號 8888 是否可連線...
+[2026-06-14 18:58:17,686] WARNING  GPSMock -   ⚠ 埠號 8888 連線被拒絕，請確認手機端伺服器已啟動
+[2026-06-14 18:58:17,687] INFO     GPSMock - 
+[5/5] TCP 連線與雙向交握驗證...
+[2026-06-14 18:58:17,687] INFO     GPSMock - 正在連線至 192.168.68.62:8888 (超時 10 秒)...
+[2026-06-14 18:58:20,055] ERROR    GPSMock - Socket 連線失敗: [WinError 10061] No connection could be made because the target machine actively refused it
+[2026-06-14 18:58:20,055] ERROR    GPSMock -   ✗ 連線被拒絕。請確認手機端的伺服器應用程式已在運行。
+[2026-06-14 18:58:20,055] INFO     GPSMock - 
+============================================================
+[2026-06-14 18:58:20,056] WARNING  GPSMock -   ⚠ 部分檢查未通過，請修正後重新運行。
+[2026-06-14 18:58:20,056] WARNING  GPSMock -   可以透過 --skip-adb 跳過 ADB 檢查。
+[2026-06-14 18:58:20,056] INFO     GPSMock - ============================================================
+[2026-06-14 18:58:20,056] ERROR    GPSMock - 運行前檢查未通過。請修正問題後重試。
+提示: 使用 --skip-adb 可跳過 ADB 檢查（需已知手機 IP）

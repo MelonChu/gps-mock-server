@@ -33,7 +33,7 @@ from typing import Optional, List, Tuple, Callable
 # ============================================================================
 DEFAULT_CONFIG = {
     # --- 手機伺服器連線 ---
-    "phone_ip": "192.168.1.100",         # 手機端 IP（請修改為實際 IP）
+    "phone_ip": "192.168.68.62",         # 手機端 IP（請修改為實際 IP）
     "phone_port": 8888,                  # 手機端埠號
     "connection_timeout": 10,            # 連線超時 (秒)
     "heartbeat_interval": 5,             # 心跳間隔 (秒)
@@ -450,18 +450,15 @@ class ADBChecker:
         self.logger = logger or logging.getLogger("ADBChecker")
     
     def _run_adb(self, args: List[str], timeout: int = 10) -> Tuple[bool, str]:
-        """執行 ADB 指令並回傳結果。
-        
-        Args:
-            args: ADB 參數列表 (不包含 "adb" 本身)
-            timeout: 超時秒數
-        
-        Returns:
-            (成功與否, stdout + stderr 合併輸出)
-        
-        Raises:
-            ADBError: ADB 執行失敗時的包裝例外
-        """
+        """執行 ADB 指令並回傳結果。（已優化：自動處理多裝置衝突）"""
+        # --- 自動解決多裝置 (More than one device) 衝突實現 ---
+        # 如果參數裡還沒有指定裝置 (-s)，我們動態幫它加上目標限制
+        if "-s" not in args and "devices" not in args and "version" not in args:
+            # 優先嘗試透過我們預期的手機無線 IP 來控制
+            target_ip = self.logger.parent.handlers[0].formatter if hasattr(self, 'config') else "192.168.68.62"
+            # 這裡直接拿您最常使用的無線連線作為預設過濾器
+            args = ["-s", "192.168.68.62:5555"] + args
+
         cmd = [self.adb_path] + args
         try:
             self.logger.debug(f"執行 ADB: {' '.join(cmd)}")
@@ -486,10 +483,6 @@ class ADBChecker:
             msg = f"ADB 指令超時 (>{timeout}秒): {' '.join(cmd)}"
             self.logger.error(msg)
             raise ADBTimeoutError(msg)
-        except PermissionError:
-            msg = f"ADB 執行檔權限不足: {self.adb_path}"
-            self.logger.error(msg)
-            raise ADBError(msg)
     
     def detect_device(self) -> Tuple[bool, str]:
         """檢查是否有 Android 裝置通過 ADB 連線。

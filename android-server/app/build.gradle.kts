@@ -56,7 +56,5 @@ dependencies {
     // Kotlin 協程
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Google Fit API — 寫入步數讓 Pikmin Bloom 讀取
-    implementation("com.google.android.gms:play-services-fitness:21.1.0")
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    // 步數使用手機內建感測器追蹤，無需外部相依
 }
