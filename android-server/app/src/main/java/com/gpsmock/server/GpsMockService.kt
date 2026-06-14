@@ -13,7 +13,6 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.gpsmock.server.utils.GpsSimulator
-import com.gpsmock.server.utils.StepInjector
 import com.gpsmock.server.utils.WalkState
 import kotlinx.coroutines.*
 
@@ -35,13 +34,11 @@ class GpsMockService : Service() {
     private var lm: LocationManager? = null
     private var wl: PowerManager.WakeLock? = null
     private val walk = WalkState()
-    private var injector: StepInjector? = null
     private var job: Job? = null
 
     override fun onCreate() {
         super.onCreate()
         lm = getSystemService(LOCATION_SERVICE) as LocationManager
-        injector = StepInjector(this)
         registerMock()
         acquireLock()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -66,7 +63,6 @@ class GpsMockService : Service() {
         job = scope.launch {
             var s = 0; while (isActive) {
                 val p = walk.next(); injectLoc(p); s++
-                if (s % 60 == 0) injector?.injectGradual()
                 delay(1000)
             }
         }

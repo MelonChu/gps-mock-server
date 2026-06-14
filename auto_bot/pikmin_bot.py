@@ -566,6 +566,10 @@ def create_bot_parser() -> argparse.ArgumentParser:
     conn.add_argument("--adb-wifi", action="store_true", help="ADB Wi-Fi 模式")
     conn.add_argument("--adb-usb", action="store_true", help="ADB USB 模式")
     conn.add_argument("--adb-port", type=int, default=5555, help="ADB 埠號 (Wi-Fi)")
+    conn.add_argument("--tailscale", action="store_true",
+        help="使用 Tailscale VPN（手機用 4G/5G，電腦用固網也能連）")
+    conn.add_argument("--zerotier", action="store_true",
+        help="使用 ZeroTier VPN（與 Tailscale 類似）")
     
     # GPS 設定
     gps = parser.add_argument_group("GPS 設定")
@@ -626,6 +630,16 @@ def main():
             bot.logger.error("ADB Wi-Fi 連線失敗")
             bot.logger.error("請先用 USB 連線執行: adb tcpip 5555")
             sys.exit(1)
+    elif args.tailscale:
+        bot.logger.info("\n[1/4] 連線 ADB (Tailscale)...")
+        bot.logger.info("  Tailscale 可讓手機用 4G/5G、電腦用固網互相連線")
+        bot.logger.info("  請確認手機與電腦都已安裝 Tailscale 並登入同一帳號")
+        if not bot.connect_adb_wifi(args.ip, args.adb_port):
+            bot.logger.warning("ADB Tailscale 連線失敗，繼續嘗試 GPS 連線...")
+    elif args.zerotier:
+        bot.logger.info("\n[1/4] 連線 ADB (ZeroTier)...")
+        if not bot.connect_adb_wifi(args.ip, args.adb_port):
+            bot.logger.warning("ADB ZeroTier 連線失敗，繼續嘗試 GPS 連線...")
     elif args.adb_usb:
         bot.logger.info("\n[1/4] 連線 ADB (USB)...")
         if not bot.connect_adb_usb():

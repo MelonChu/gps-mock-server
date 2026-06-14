@@ -4,11 +4,6 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-env:
-  KEYSTORE_PASSWORD: android
-  KEY_ALIAS: android
-  KEY_PASSWORD: android
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,43 +26,13 @@ jobs:
           echo "GRADLE_HOME=$PWD/gradle-8.5" >> $GITHUB_ENV
           echo "$PWD/gradle-8.5/bin" >> $GITHUB_PATH
 
-      - name: Generate Keystore
+      - name: Build Debug APK
         run: |
-          keytool -genkey -v -keystore android-standalone/release.keystore \
-            -alias ${{ env.KEY_ALIAS }} \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass ${{ env.KEYSTORE_PASSWORD }} \
-            -keypass ${{ env.KEY_PASSWORD }} \
-            -dname "CN=Pikmin, OU=Dev, O=Pikmin, L=Unknown, ST=Unknown, C=TW"
-
-      - name: Build Release APK
-        run: |
-          cd android-standalone
-          gradle assembleRelease \
-            -Pandroid.injected.signing.store.file=release.keystore \
-            -Pandroid.injected.signing.store.password=${{ env.KEYSTORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ env.KEY_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ env.KEY_PASSWORD }}
-
-      - name: Align APK
-        run: |
-          cd android-standalone
-          $ANDROID_HOME/build-tools/34.0.0/zipalign -v 4 \
-            app/build/outputs/apk/release/app-release-unsigned.apk \
-            pikmin-standalone.apk
-
-      - name: Sign APK
-        run: |
-          cd android-standalone
-          apksigner sign --ks release.keystore \
-            --ks-pass pass:${{ env.KEYSTORE_PASSWORD }} \
-            --ks-key-alias ${{ env.KEY_ALIAS }} \
-            --key-pass pass:${{ env.KEY_PASSWORD }} \
-            --out pikmin-standalone-signed.apk \
-            pikmin-standalone.apk
+          cd android-server
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: pikmin-standalone
-          path: android-standalone/pikmin-standalone-signed.apk
+          path: android-server/app/build/outputs/apk/debug/app-debug.apk

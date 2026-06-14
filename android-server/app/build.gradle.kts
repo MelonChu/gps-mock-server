@@ -56,6 +56,5 @@ dependencies {
     // Kotlin 協程
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Health Connect — 用於寫入步數
-    implementation("androidx.health.connect:connect-client:1.1.0")
+    // 步數注入已移除（Health Connect 要求 compileSdk 36，暫不使用）
 }
