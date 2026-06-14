@@ -1,0 +1,43 @@
+name: Build APK
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      
+      - name: Build APK
+        run: |
+          cd android-server
+          chmod +x gradlew
+          ./gradlew assembleRelease
+      
+      - name: Sign APK
+        run: |
+          cd android-server
+          keytool -genkey -v -keystore mock_gps.keystore \
+            -alias mock_gps -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass 123456 -keypass 123456 \
+            -dname "CN=GPSMock, OU=Dev, O=GPSMock, L=Unknown, ST=Unknown, C=TW"
+          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 \
+            -keystore mock_gps.keystore -storepass 123456 \
+            app/build/outputs/apk/release/app-release-unsigned.apk mock_gps
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: gps-mock-server
+          path: android-server/app/build/outputs/apk/release/app-release-unsigned.apk
