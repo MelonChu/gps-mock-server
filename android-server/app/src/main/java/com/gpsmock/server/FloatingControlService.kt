@@ -123,20 +123,46 @@ class FloatingControlService : Service() {
     // ====================================================================
     // Mock Provider 註冊
     // ====================================================================
-    @Suppress("DEPRECATION")
     private fun registerMockProvider() {
         try {
             lm?.let {
+                // 清除舊的 Provider
                 try { it.removeTestProvider(PROVIDER) } catch (_: Exception) {}
-                it.addTestProvider(PROVIDER, false,false,false,false,true,true,true,
-                    Criteria.POWER_LOW, Criteria.ACCURACY_FINE)
-                it.setTestProviderEnabled(PROVIDER, true)
-                providerReady = true
-                runOnUiThread {
-                    statusGps.text = "✅ GPS 運行中"
-                    statusGps.setTextColor(0xFF88FF88.toInt())
+
+                // Android 12+ 使用新版 ProviderProperties API
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    val props = android.location.provider.ProviderProperties.Builder()
+                        .setHasAltitude(true)
+                        .setHasBearing(true)
+                        .setHasSpeed(true)
+                        .build()
+                    it.addTestProvider(PROVIDER, props)
+                } else {
+                    @Suppress("DEPRECATION")
+                    it.addTestProvider(PROVIDER, false,false,false,false,true,true,true,
+                        android.location.Criteria.POWER_LOW, android.location.Criteria.ACCURACY_FINE)
                 }
-                Log.i(TAG, "✅ Mock Provider 註冊成功")
+
+                it.setTestProviderEnabled(PROVIDER, true)
+
+                // 測試一次注入，確認真的可以
+                try {
+                    val testLoc = Location(PROVIDER).apply {
+                        latitude = 25.0478; longitude = 121.5170; accuracy = 5f
+                        time = System.currentTimeMillis()
+                        if (Build.VERSION.SDK_INT >= 17) elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
+                    }
+                    it.setTestProviderLocation(PROVIDER, testLoc)
+                    providerReady = true
+                    runOnUiThread {
+                        statusGps.text = "✅ GPS 運行中"
+                        statusGps.setTextColor(0xFF88FF88.toInt())
+                    }
+                    Log.i(TAG, "✅ GPS 已就緒")
+                } catch (injectErr: Exception) {
+                    providerReady = false
+                    runOnUiThread { statusGps.text = "⚠️ 注入失敗: ${injectErr.message}" }
+                }
             }
         } catch (e: SecurityException) {
             providerReady = false
@@ -144,10 +170,9 @@ class FloatingControlService : Service() {
                 statusGps.text = "⚠️ 請設定模擬位置 App（開發者選項）"
                 statusGps.setTextColor(0xFFFF4444.toInt())
             }
-            Log.e(TAG, "✗ 權限不足 — 請在開發者選項設定此 App 為模擬位置")
         } catch (e: Exception) {
             providerReady = false
-            runOnUiThread { statusGps.text = "⚠️ GPS 錯誤: ${e.message}" }
+            runOnUiThread { statusGps.text = "⚠️ 註冊失敗: ${e.message}" }
         }
     }
 
@@ -155,16 +180,16 @@ class FloatingControlService : Service() {
         try { lm?.removeTestProvider(PROVIDER) } catch (_: Exception) {}
     }
 
-    @Suppress("DEPRECATION")
     private fun injectLoc(p: GpsSimulator.Point) {
         if (!providerReady) return
         try {
-            lm?.setTestProviderLocation(PROVIDER, Location(PROVIDER).apply {
+            val loc = Location(PROVIDER).apply {
                 latitude = p.lat; longitude = p.lon; accuracy = 5f
                 speed = p.speed.toFloat(); bearing = p.bearing.toFloat()
                 time = System.currentTimeMillis()
                 if (Build.VERSION.SDK_INT >= 17) elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
-            })
+            }
+            lm?.setTestProviderLocation(PROVIDER, loc)
         } catch (e: Exception) {
             Log.e(TAG, "GPS 注入失敗: ${e.message}")
         }
