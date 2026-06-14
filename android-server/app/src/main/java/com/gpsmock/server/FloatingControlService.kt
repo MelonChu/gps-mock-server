@@ -123,45 +123,31 @@ class FloatingControlService : Service() {
     // ====================================================================
     // Mock Provider 註冊
     // ====================================================================
+    @Suppress("DEPRECATION")
     private fun registerMockProvider() {
         try {
             lm?.let {
-                // 清除舊的 Provider
                 try { it.removeTestProvider(PROVIDER) } catch (_: Exception) {}
-
-                // Android 12+ 使用新版 ProviderProperties API
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    val props = android.location.provider.ProviderProperties.Builder()
-                        .setHasAltitude(true)
-                        .setHasBearing(true)
-                        .setHasSpeed(true)
-                        .build()
-                    it.addTestProvider(PROVIDER, props)
-                } else {
-                    @Suppress("DEPRECATION")
-                    it.addTestProvider(PROVIDER, false,false,false,false,true,true,true,
-                        android.location.Criteria.POWER_LOW, android.location.Criteria.ACCURACY_FINE)
-                }
-
+                it.addTestProvider(PROVIDER, false,false,false,false,true,true,true,
+                    android.location.Criteria.POWER_LOW, android.location.Criteria.ACCURACY_FINE)
                 it.setTestProviderEnabled(PROVIDER, true)
 
-                // 測試一次注入，確認真的可以
+                // 測試注入
                 try {
-                    val testLoc = Location(PROVIDER).apply {
+                    val t = Location(PROVIDER).apply {
                         latitude = 25.0478; longitude = 121.5170; accuracy = 5f
                         time = System.currentTimeMillis()
                         if (Build.VERSION.SDK_INT >= 17) elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
                     }
-                    it.setTestProviderLocation(PROVIDER, testLoc)
+                    it.setTestProviderLocation(PROVIDER, t)
                     providerReady = true
                     runOnUiThread {
                         statusGps.text = "✅ GPS 運行中"
                         statusGps.setTextColor(0xFF88FF88.toInt())
                     }
-                    Log.i(TAG, "✅ GPS 已就緒")
-                } catch (injectErr: Exception) {
+                } catch (e: Exception) {
                     providerReady = false
-                    runOnUiThread { statusGps.text = "⚠️ 注入失敗: ${injectErr.message}" }
+                    runOnUiThread { statusGps.text = "⚠️ 注入測試失敗: ${e.message}" }
                 }
             }
         } catch (e: SecurityException) {
@@ -172,7 +158,7 @@ class FloatingControlService : Service() {
             }
         } catch (e: Exception) {
             providerReady = false
-            runOnUiThread { statusGps.text = "⚠️ 註冊失敗: ${e.message}" }
+            runOnUiThread { statusGps.text = "⚠️ 錯誤: ${e.message}" }
         }
     }
 
