@@ -26,7 +26,7 @@ jobs:
           echo "GRADLE_HOME=$PWD/gradle-8.5" >> $GITHUB_ENV
           echo "$PWD/gradle-8.5/bin" >> $GITHUB_PATH
 
-      - name: Build Release APK
+      - name: Build APK
         run: |
           cd android-server
           gradle assembleRelease
@@ -38,8 +38,6 @@ jobs:
             -alias android -keyalg RSA -keysize 2048 -validity 10000 \
             -storepass 123456 -keypass 123456 \
             -dname "CN=GPSMock, OU=Dev, O=GPSMock, L=Unknown, ST=Unknown, C=TW"
-
-          # Sign the APK
           java -jar $ANDROID_HOME/build-tools/34.0.0/lib/apksigner.jar sign \
             --ks release.keystore --ks-pass pass:123456 \
             --ks-key-alias android --key-pass pass:123456 \
