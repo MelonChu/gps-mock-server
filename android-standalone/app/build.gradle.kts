@@ -19,6 +19,13 @@ android {
         debug {
             isMinifyEnabled = false
         }
+        release {
+            isMinifyEnabled = false
+        }
+    }
+
+    lint {
+        disable += "MockLocation"
     }
 
     compileOptions {
