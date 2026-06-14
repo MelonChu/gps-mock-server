@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🌸 Pikmin 助手"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="懸浮搖桿 + GPS 模擬 + 步數注入"
+            android:textSize="13sp"
+            android:textColor="#888"
+            android:layout_marginBottom="24dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="權限狀態"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/perm_overlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="❌ 懸浮視窗"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/perm_mock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="❌ 模擬位置"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/perm_health"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="❌ 健康資料"
+            android:textSize="14sp"
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/btn_permissions"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="授予權限"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btn_start"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="啟動懸浮控制"
+            android:textSize="16sp"
+            android:enabled="false"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\n使用說明"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="① 點按「授予權限」開啟所有必要權限\n② 開啟 Pikmin Bloom 到主畫面\n③ 點「啟動懸浮控制」\n④ 使用搖桿走路 / 開關游蕩模式\n⑤ 步數會自動寫入手機健康系統\n\n懸浮視窗可任意拖動位置"
+            android:textSize="13sp"
+            android:lineSpacingExtra="4dp"
+            android:textColor="#555"/>
+
+    </LinearLayout>
+
+</ScrollView>
