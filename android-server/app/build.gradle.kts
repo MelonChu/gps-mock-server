@@ -56,7 +56,5 @@ dependencies {
     // Kotlin 協程
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Google Fit API — 使用 Google Play Services（手機已有，不需下載 App）
-    implementation("com.google.android.gms:play-services-fitness:21.1.0")
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    // 步數追蹤使用手機內建感測器，無需外部相依
 }

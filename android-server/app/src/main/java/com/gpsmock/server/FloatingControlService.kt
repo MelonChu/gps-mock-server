@@ -1,10 +1,8 @@
 package com.gpsmock.server
 
 import android.app.*
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.PixelFormat
 import android.location.Criteria
 import android.location.Location
@@ -17,23 +15,20 @@ import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.core.app.NotificationCompat
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.fitness.Fitness
-import com.google.android.gms.fitness.FitnessOptions
-import com.google.android.gms.fitness.data.DataSet
-import com.google.android.gms.fitness.data.DataSource
-import com.google.android.gms.fitness.data.DataType
-import com.google.android.gms.fitness.data.DataPoint
-import com.google.android.gms.fitness.data.Field
-import com.google.android.gms.tasks.Tasks
 import com.gpsmock.server.utils.GpsSimulator
 import com.gpsmock.server.utils.WalkState
 import com.gpsmock.server.views.JoystickView
 import kotlinx.coroutines.*
-import java.util.concurrent.TimeUnit
-import java.time.ZonedDateTime
-import java.time.ZoneId
 
+/**
+ * 懸浮控制服務 — 搖桿 + GPS 模擬 + 游蕩模式
+ *
+ * 一個 Service 搞定所有事，不需任何外部相依。
+ * - 搖桿：手動控制走路方向
+ * - 游蕩：自動隨機漫步（1.1~1.5 m/s）
+ * - GPS 狀態顯示在頂端
+ * - 步數顯示在 overlay（僅供參考，不注入外部系統）
+ */
 class FloatingControlService : Service() {
     companion object {
         private const val TAG = "FloatingCtrl"
@@ -54,40 +49,18 @@ class FloatingControlService : Service() {
     private var walkedSteps = 0L
     private var providerReady = false
 
-    // GPS 狀態顯示
+    // UI
     private lateinit var statusGps: TextView
     private lateinit var roamLabel: TextView
-    private lateinit var btnGoogleSync: Button
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var loopJob: Job? = null
-
-    // Google Fit
-    private val fitOptions by lazy {
-        FitnessOptions.builder()
-            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_WRITE)
-            .build()
-    }
-    private var googleAuthorized = false
-
-    // 廣播接收器 — 接收 Google 授權結果
-    private val googleResultReceiver = object : BroadcastReceiver() {
-        override fun onReceive(ctx: Context, intent: Intent) {
-            if (intent.action == GoogleSignInActivity.EXTRA_FINISH) {
-                googleAuthorized = true
-                runOnUiThread { btnGoogleSync.text = "✅ Google 已連結" }
-                Log.i(TAG, "Google Fit 授權成功")
-            }
-        }
-    }
 
     override fun onCreate() {
         super.onCreate()
         wm = getSystemService(WINDOW_SERVICE) as WindowManager
         lm = getSystemService(LOCATION_SERVICE) as LocationManager
         pm = getSystemService(POWER_SERVICE) as PowerManager
-        registerReceiver(googleResultReceiver, IntentFilter(GoogleSignInActivity.EXTRA_FINISH),
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) RECEIVER_NOT_EXPORTED else 0)
         createChan()
     }
 
@@ -99,11 +72,7 @@ class FloatingControlService : Service() {
 
     override fun onBind(i: Intent?) = null
 
-    override fun onDestroy() {
-        hide(); scope.cancel(); releaseLock()
-        try { unregisterReceiver(googleResultReceiver) } catch (_: Exception) {}
-        super.onDestroy()
-    }
+    override fun onDestroy() { hide(); scope.cancel(); releaseLock(); super.onDestroy() }
 
     // ====================================================================
     // 懸浮視窗
@@ -128,11 +97,8 @@ class FloatingControlService : Service() {
             findViewById<View>(R.id.drag_handle).setOnTouchListener { v, e -> drag(v, e); true }
             findViewById<View>(R.id.btn_minimize).setOnClickListener { hide() }
 
-            btnGoogleSync = findViewById(R.id.btn_google_sync)
-            btnGoogleSync.setOnClickListener {
-                startActivity(Intent(this@FloatingControlService, GoogleSignInActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            }
+            // 隱藏 Google 同步按鈕
+            findViewById<Button>(R.id.btn_google_sync).visibility = View.GONE
         }
 
         wm.addView(overlay, WindowManager.LayoutParams(
@@ -145,9 +111,8 @@ class FloatingControlService : Service() {
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT).apply { gravity = Gravity.TOP or Gravity.START; x = 100; y = 300 })
 
-        // 註冊 Mock Provider + 啟動
+        // 註冊 GPS Mock Provider + 啟動
         registerMockProvider()
-        checkGoogleAuth()
         acquireLock()
         startGpsLoop()
     }
@@ -158,22 +123,22 @@ class FloatingControlService : Service() {
     }
 
     // ====================================================================
-    // Mock Provider 註冊（修復 GPS 不動的關鍵）
+    // Mock Provider 註冊
     // ====================================================================
     @Suppress("DEPRECATION")
     private fun registerMockProvider() {
         try {
             lm?.let {
-                // 先移除舊的 Provider
                 try { it.removeTestProvider(PROVIDER) } catch (_: Exception) {}
-                try { it.removeTestProvider("GPSMockProvider") } catch (_: Exception) {}
-
                 it.addTestProvider(PROVIDER, false,false,false,false,true,true,true,
                     Criteria.POWER_LOW, Criteria.ACCURACY_FINE)
                 it.setTestProviderEnabled(PROVIDER, true)
                 providerReady = true
-                runOnUiThread { statusGps.text = "✅ GPS 運行中"; statusGps.setTextColor(0xFF88FF88.toInt()) }
-                Log.i(TAG, "✅ Mock Provider 已註冊")
+                runOnUiThread {
+                    statusGps.text = "✅ GPS 運行中"
+                    statusGps.setTextColor(0xFF88FF88.toInt())
+                }
+                Log.i(TAG, "✅ Mock Provider 註冊成功")
             }
         } catch (e: SecurityException) {
             providerReady = false
@@ -181,11 +146,10 @@ class FloatingControlService : Service() {
                 statusGps.text = "⚠️ 請設定模擬位置 App（開發者選項）"
                 statusGps.setTextColor(0xFFFF4444.toInt())
             }
-            Log.e(TAG, "✗ Mock Location 權限不足")
+            Log.e(TAG, "✗ 權限不足 — 請在開發者選項設定此 App 為模擬位置")
         } catch (e: Exception) {
             providerReady = false
-            runOnUiThread { statusGps.text = "⚠️ GPS 註冊失敗: ${e.message}" }
-            Log.e(TAG, "✗ 註冊失敗: ${e.message}")
+            runOnUiThread { statusGps.text = "⚠️ GPS 錯誤: ${e.message}" }
         }
     }
 
@@ -209,29 +173,32 @@ class FloatingControlService : Service() {
     }
 
     // ====================================================================
-    // 主循環
+    // 主循環 — 每秒更新 GPS 位置
     // ====================================================================
     private fun startGpsLoop() {
         loopJob = scope.launch {
-            var counter = 0
             while (isActive) {
-                val p = walk.next(); injectLoc(p); walkedSteps++; counter++
-                if (counter % 5 == 0) {
-                    val steps = walkedSteps
-                    val roam = isRoam
-                    runOnUiThread {
-                        roamLabel.text = "游蕩 ${if(roam) "🌙" else "✋"} | ${steps}步"
-                    }
-                }
+                val p = walk.next()
+                injectLoc(p)
+                walkedSteps++
                 delay(1000)
             }
         }
 
-        // 每分鐘寫步數到 Google Fit（如果已授權）
+        // UI 更新（每 3 秒刷新一次）
         scope.launch {
             while (isActive) {
-                delay(60000)
-                if (googleAuthorized) writeStepsToGoogleFit(walkedSteps)
+                delay(3000)
+                if (providerReady) {
+                    val steps = walkedSteps
+                    val roam = isRoam
+                    val lat = walk.lat
+                    val lon = walk.lon
+                    runOnUiThread {
+                        roamLabel.text = "游蕩 ${if(roam) "🌙" else "✋"} | ${steps}步"
+                        statusGps.text = "✅ ${lat.toString().take(7)}, ${lon.toString().take(7)}"
+                    }
+                }
             }
         }
     }
@@ -239,56 +206,11 @@ class FloatingControlService : Service() {
     private fun stopGpsLoop() { loopJob?.cancel() }
 
     // ====================================================================
-    // Google Fit 步數寫入（不需 Google Fit App）
+    // 工具
     // ====================================================================
-    private fun checkGoogleAuth() {
-        try {
-            val a = GoogleSignIn.getAccountForExtension(this, fitOptions)
-            googleAuthorized = GoogleSignIn.hasPermissions(a, fitOptions)
-            runOnUiThread {
-                btnGoogleSync.text = if (googleAuthorized) "✅ Google 已連結" else "🔗 Google 同步步數"
-            }
-        } catch (_: Exception) {}
+    private fun runOnUiThread(a: () -> Unit) {
+        android.os.Handler(mainLooper).post(a)
     }
-
-    private val MAX_DAILY_STEPS = 15000
-
-    private fun writeStepsToGoogleFit(totalSteps: Long) {
-        if (!googleAuthorized) return
-        try {
-            val account = GoogleSignIn.getAccountForExtension(this, fitOptions)
-            val now = ZonedDateTime.now()
-            val startMs = now.toLocalDate().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
-            val source = DataSource.Builder()
-                .setAppPackageName(this)
-                .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
-                .setType(DataSource.TYPE_RAW)
-                .build()
-
-            val count = minOf(totalSteps, MAX_DAILY_STEPS.toLong()).toInt()
-            val point = DataPoint.builder(source)
-                .setTimestamp(startMs, TimeUnit.MILLISECONDS)
-                .setField(Field.FIELD_STEPS, count)
-                .build()
-
-            val dataSet = DataSet.create(source)
-            dataSet.add(point)
-
-            Tasks.await(
-                Fitness.getHistoryClient(this, account).insertData(dataSet),
-                30, TimeUnit.SECONDS
-            )
-            Log.i(TAG, "✅ 已寫入 $count 步到 Google Fit")
-        } catch (e: Exception) {
-            Log.e(TAG, "Google Fit 寫入失敗: ${e.message}")
-        }
-    }
-
-    // ====================================================================
-    // 工具函數
-    // ====================================================================
-    private fun runOnUiThread(a: () -> Unit) { android.os.Handler(mainLooper).post(a) }
 
     private var ix = 0; private var iy = 0; private var itx = 0f; private var ity = 0f
     private fun drag(v: View, e: MotionEvent): Boolean {
