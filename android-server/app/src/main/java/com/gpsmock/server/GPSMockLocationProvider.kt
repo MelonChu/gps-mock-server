@@ -1,8 +1,8 @@
 package com.gpsmock.server
 
 import android.content.Context
-import android.location.Criteria
 import android.location.LocationManager
+import android.location.provider.ProviderProperties
 import android.util.Log
 
 /**
@@ -45,28 +45,15 @@ object GPSMockLocationProvider {
             // 移除舊的 Provider 後重新註冊 (避免重複註冊錯誤)
             removeMockProvider(locationManager)
 
-            // 建立 Provider 的品質條件
-            val criteria = Criteria().apply {
-                accuracy = Criteria.ACCURACY_FINE       // 高精度 GPS
-                powerRequirement = Criteria.POWER_LOW    // 低耗電（模擬不需要真實 GPS）
-                isAltitudeRequired = true
-                isBearingRequired = true
-                isSpeedRequired = true
-                isCostAllowed = false
-            }
+            // 使用 ProviderProperties.Builder 建立 Provider（Android 34+ API）
+            val properties = ProviderProperties.Builder()
+                .setHasAltitude(true)
+                .setHasBearing(true)
+                .setHasSpeed(true)
+                .build()
 
             // 註冊為測試 Provider
-            locationManager.addTestProvider(
-                PROVIDER_NAME,
-                criteria.isAltitudeRequired,
-                criteria.isBearingRequired,
-                criteria.isSpeedRequired,
-                false,           // 不需要監聽者變更
-                criteria.isCostAllowed,
-                criteria.isAltitudeRequired,
-                criteria.isBearingRequired,
-                criteria.isSpeedRequired,
-            )
+            locationManager.addTestProvider(PROVIDER_NAME, properties)
 
             // 啟用 Provider
             locationManager.setTestProviderEnabled(PROVIDER_NAME, true)

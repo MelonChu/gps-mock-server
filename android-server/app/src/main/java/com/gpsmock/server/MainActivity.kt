@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.wifi.WifiManager
+import android.util.Log
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -202,10 +203,12 @@ class MainActivity : AppCompatActivity() {
             try {
                 // 嘗試註冊 provider，如果能成功則表示有權限
                 val lm = getSystemService(LOCATION_SERVICE) as LocationManager
-                lm.addTestProvider(
-                    "TempCheckProvider", false, false, false, false,
-                    false, false, false, false
-                )
+                val tempProps = android.location.provider.ProviderProperties.Builder()
+                    .setHasAltitude(false)
+                    .setHasBearing(false)
+                    .setHasSpeed(false)
+                    .build()
+                lm.addTestProvider("TempCheckProvider", tempProps)
                 lm.removeTestProvider("TempCheckProvider")
                 return true
             } catch (e: SecurityException) {

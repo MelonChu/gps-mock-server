@@ -4,12 +4,12 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Criteria
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
@@ -69,7 +69,7 @@ class GPSServerService : Service() {
         val protocol_version: Int? = null,
         val client_name: String? = null,
         val command: String? = null,
-        val params: Map<String, Any>? = null,
+        val params: Map<String, String>? = null,
     )
 
     @Serializable
