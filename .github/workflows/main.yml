@@ -19,11 +19,17 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
       
+      - name: Install Gradle
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip
+          unzip -q gradle-8.5-bin.zip
+          echo "GRADLE_HOME=$PWD/gradle-8.5" >> $GITHUB_ENV
+          echo "$PWD/gradle-8.5/bin" >> $GITHUB_PATH
+      
       - name: Build APK
         run: |
           cd android-server
-          chmod +x gradlew
-          ./gradlew assembleRelease
+          gradle assembleRelease
       
       - name: Sign APK
         run: |
