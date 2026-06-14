@@ -26,13 +26,28 @@ jobs:
           echo "GRADLE_HOME=$PWD/gradle-8.5" >> $GITHUB_ENV
           echo "$PWD/gradle-8.5/bin" >> $GITHUB_PATH
 
-      - name: Build Debug APK
+      - name: Build Release APK
         run: |
           cd android-server
-          gradle assembleDebug
+          gradle assembleRelease
+
+      - name: Generate Keystore & Sign
+        run: |
+          cd android-server
+          keytool -genkey -v -keystore release.keystore \
+            -alias android -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass 123456 -keypass 123456 \
+            -dname "CN=GPSMock, OU=Dev, O=GPSMock, L=Unknown, ST=Unknown, C=TW"
+
+          # Sign the APK
+          java -jar $ANDROID_HOME/build-tools/34.0.0/lib/apksigner.jar sign \
+            --ks release.keystore --ks-pass pass:123456 \
+            --ks-key-alias android --key-pass pass:123456 \
+            --out pikmin-signed.apk \
+            app/build/outputs/apk/release/app-release-unsigned.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: pikmin-standalone
-          path: android-server/app/build/outputs/apk/debug/app-debug.apk
+          path: android-server/pikmin-signed.apk
