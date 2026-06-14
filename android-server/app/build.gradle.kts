@@ -37,10 +37,6 @@ android {
 
     // 允許純文字 HTTP 流量（預設 Android 9+ 禁止）
     // 因為是區域網路使用，安全風險極低
-    @Suppress("UnstableApiUsage")
-    androidResources {
-        noCompress.set(listOf<String>())
-    }
 }
 
 dependencies {
