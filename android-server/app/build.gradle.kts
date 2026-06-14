@@ -37,6 +37,12 @@ android {
 
     // 允許純文字 HTTP 流量（預設 Android 9+ 禁止）
     // 因為是區域網路使用，安全風險極低
+
+    lint {
+        // MockLocation 權限在 release build 中需要關閉 lint 檢查
+        // 因為此 App 的核心功能就是模擬 GPS 位置
+        disable += "MockLocation"
+    }
 }
 
 dependencies {
