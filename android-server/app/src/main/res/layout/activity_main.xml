@@ -114,6 +114,15 @@
             android:layout_height="56dp"
             android:text="啟動伺服器"
             android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- 浮動搖桿按鈕 (新增) -->
+        <Button
+            android:id="@+id/btn_float"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="🎮 啟動懸浮搖桿 (不需電腦)"
+            android:textSize="15sp"
             android:layout_marginBottom="16dp"/>
 
         <!-- 分隔線 -->

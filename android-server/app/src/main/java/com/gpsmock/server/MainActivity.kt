@@ -53,6 +53,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusText: TextView
     private lateinit var startStopButton: Button
     private lateinit var clientInfoText: TextView
+    private lateinit var btnFloat: Button
 
     // 服務狀態
     private var isServiceRunning = false
@@ -76,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         portText = findViewById(R.id.port)
         statusText = findViewById(R.id.status)
         startStopButton = findViewById(R.id.start_stop_button)
+        btnFloat = findViewById(R.id.btn_float)
         clientInfoText = findViewById(R.id.client_info)
 
         // 預設埠號
@@ -83,6 +85,8 @@ class MainActivity : AppCompatActivity() {
 
         // 設定按鈕事件
         startStopButton.setOnClickListener { onStartStopClicked() }
+        btnFloat.setOnClickListener { onFloatClicked() }
+        btnFloat.setOnClickListener { onFloatClicked() }
 
         // 註冊 Wi-Fi 狀態變化監聽
         registerReceiver(
@@ -116,15 +120,30 @@ class MainActivity : AppCompatActivity() {
     // ====================================================================
     private fun onStartStopClicked() {
         if (isServiceRunning) {
-            // 停止服務
             stopService()
         } else {
-            // 啟動服務 — 先執行運行前檢查
-            if (!preflightCheck()) {
-                return
-            }
+            if (!preflightCheck()) return
             startService()
         }
+    }
+
+    private fun onFloatClicked() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("需要懸浮視窗權限")
+                .setMessage("請允許在其他應用程式上方顯示，才能使用搖桿控制。")
+                .setPositiveButton("前往設定") { _, _ ->
+                    startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + this.packageName)))
+                }
+                .setNegativeButton("稍後", null)
+                .show()
+            return
+        }
+        val intent = Intent(this, FloatingControlService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(intent)
+        else startService(intent)
+        Toast.makeText(this, "懸浮搖桿已啟動 🎮", Toast.LENGTH_SHORT).show()
     }
 
     // ====================================================================
