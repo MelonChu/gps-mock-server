@@ -97,8 +97,6 @@ class FloatingControlService : Service() {
             findViewById<View>(R.id.drag_handle).setOnTouchListener { v, e -> drag(v, e); true }
             findViewById<View>(R.id.btn_minimize).setOnClickListener { hide() }
 
-            // 隱藏 Google 同步按鈕
-            findViewById<Button>(R.id.btn_google_sync).visibility = View.GONE
         }
 
         wm.addView(overlay, WindowManager.LayoutParams(
