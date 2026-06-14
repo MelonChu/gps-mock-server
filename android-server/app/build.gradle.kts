@@ -56,5 +56,7 @@ dependencies {
     // Kotlin 協程
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // 步數注入已移除（Health Connect 要求 compileSdk 36，暫不使用）
+    // Google Fit API — 寫入步數讓 Pikmin Bloom 讀取
+    implementation("com.google.android.gms:play-services-fitness:21.1.0")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
 }

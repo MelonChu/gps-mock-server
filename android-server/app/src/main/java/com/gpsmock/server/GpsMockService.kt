@@ -35,10 +35,13 @@ class GpsMockService : Service() {
     private var wl: PowerManager.WakeLock? = null
     private val walk = WalkState()
     private var job: Job? = null
+    private var googleFit: GoogleFitHelper? = null
+    private var totalSteps = 0L
 
     override fun onCreate() {
         super.onCreate()
         lm = getSystemService(LOCATION_SERVICE) as LocationManager
+        googleFit = GoogleFitHelper(this)
         registerMock()
         acquireLock()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -63,6 +66,13 @@ class GpsMockService : Service() {
         job = scope.launch {
             var s = 0; while (isActive) {
                 val p = walk.next(); injectLoc(p); s++
+                // 每 60 步（約 1 分鐘）寫入步數到 Google Fit
+                if (s % 60 == 0) {
+                    totalSteps += 100
+                    googleFit?.let { g ->
+                        if (g.hasPermission()) g.writeSteps(totalSteps)
+                    }
+                }
                 delay(1000)
             }
         }
