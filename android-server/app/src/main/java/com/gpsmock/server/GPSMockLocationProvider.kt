@@ -1,8 +1,8 @@
 package com.gpsmock.server
 
 import android.content.Context
+import android.location.Criteria
 import android.location.LocationManager
-import android.location.provider.ProviderProperties
 import android.util.Log
 
 /**
@@ -45,15 +45,20 @@ object GPSMockLocationProvider {
             // 移除舊的 Provider 後重新註冊 (避免重複註冊錯誤)
             removeMockProvider(locationManager)
 
-            // 使用 ProviderProperties.Builder 建立 Provider（Android 34+ API）
-            val properties = ProviderProperties.Builder()
-                .setHasAltitude(true)
-                .setHasBearing(true)
-                .setHasSpeed(true)
-                .build()
-
-            // 註冊為測試 Provider
-            locationManager.addTestProvider(PROVIDER_NAME, properties)
+            @Suppress("DEPRECATION")
+            // 註冊為測試 Provider（使用相容的舊版 API）
+            locationManager.addTestProvider(
+                PROVIDER_NAME,
+                false,       // requiresNetwork
+                false,       // requiresSatellite
+                false,       // requiresCell
+                false,       // hasMonetaryCost
+                true,        // supportsAltitude
+                true,        // supportsSpeed
+                true,        // supportsBearing
+                Criteria.POWER_LOW,
+                Criteria.ACCURACY_FINE,
+            )
 
             // 啟用 Provider
             locationManager.setTestProviderEnabled(PROVIDER_NAME, true)

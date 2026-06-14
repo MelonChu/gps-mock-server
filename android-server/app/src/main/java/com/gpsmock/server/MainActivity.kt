@@ -203,12 +203,14 @@ class MainActivity : AppCompatActivity() {
             try {
                 // 嘗試註冊 provider，如果能成功則表示有權限
                 val lm = getSystemService(LOCATION_SERVICE) as LocationManager
-                val tempProps = android.location.provider.ProviderProperties.Builder()
-                    .setHasAltitude(false)
-                    .setHasBearing(false)
-                    .setHasSpeed(false)
-                    .build()
-                lm.addTestProvider("TempCheckProvider", tempProps)
+                @Suppress("DEPRECATION")
+                lm.addTestProvider(
+                    "TempCheckProvider",
+                    false, false, false, false,
+                    false, false, false,
+                    android.location.Criteria.POWER_LOW,
+                    android.location.Criteria.ACCURACY_FINE
+                )
                 lm.removeTestProvider("TempCheckProvider")
                 return true
             } catch (e: SecurityException) {
